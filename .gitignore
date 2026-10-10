@@ -3,6 +3,8 @@ src/bin
 src/obj
 tests/bin
 tests/obj
+/build/bin/
+/build/obj/
 build/net46/obj/
 build/netstandard1.0/bin/
 build/netstandard1.0/obj/

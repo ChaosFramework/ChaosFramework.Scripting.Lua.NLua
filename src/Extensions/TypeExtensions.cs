@@ -9,14 +9,35 @@ namespace NLua.Extensions
     static class TypeExtensions
     {
         public static bool HasMethod(this Type t, string name)
+            => t.GetMethods(name, BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static).Length > 0;
+
+        public static bool HasBitwiseAndOperator(this Type t)
         {
-            var op = t.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static);
-            return op.Any(m => m.Name == name);
+            if (t.IsPrimitive || t.IsEnum)
+                return true;
+
+            return t.HasMethod("op_BitwiseAnd");
+        }
+
+        public static bool HasBitwiseOrOperator(this Type t)
+        {
+            if (t.IsPrimitive || t.IsEnum)
+                return true;
+
+            return t.HasMethod("op_BitwiseOr");
+        }
+
+        public static bool HasBitwiseXOrOperator(this Type t)
+        {
+            if (t.IsPrimitive || t.IsEnum)
+                return true;
+
+            return t.HasMethod("op_ExclusiveOr");
         }
 
         public static bool HasAdditionOperator(this Type t)
         {
-            if (t.IsPrimitive)
+            if (t.IsPrimitive || t.IsEnum)
                 return true;
 
             return t.HasMethod("op_Addition");
@@ -24,7 +45,7 @@ namespace NLua.Extensions
 
         public static bool HasSubtractionOperator(this Type t)
         {
-            if (t.IsPrimitive)
+            if (t.IsPrimitive || t.IsEnum)
                 return true;
 
             return t.HasMethod("op_Subtraction");
@@ -56,7 +77,7 @@ namespace NLua.Extensions
 
         public static bool HasUnaryNegationOperator(this Type t)
         {
-            if (t.IsPrimitive)
+            if (t.IsPrimitive || t.IsEnum)
                 return true;
             // Unary - will always have only one version.
             var op = t.GetMethod("op_UnaryNegation", BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static);
@@ -65,14 +86,14 @@ namespace NLua.Extensions
 
         public static bool HasEqualityOperator(this Type t)
         {
-            if (t.IsPrimitive)
+            if (t.IsPrimitive || t.IsEnum)
                 return true;
             return t.HasMethod("op_Equality");
         }
 
         public static bool HasLessThanOperator(this Type t)
         {
-            if (t.IsPrimitive)
+            if (t.IsPrimitive || t.IsEnum)
                 return true;
 
             return t.HasMethod("op_LessThan");
@@ -80,14 +101,17 @@ namespace NLua.Extensions
 
         public static bool HasLessThanOrEqualOperator(this Type t)
         {
-            if (t.IsPrimitive)
+            if (t.IsPrimitive || t.IsEnum)
                 return true;
             return t.HasMethod("op_LessThanOrEqual");
         }
 
         public static MethodInfo[] GetMethods(this Type t, string name, BindingFlags flags)
         {
-            return t.GetMethods(flags).Where(m => m.Name == name).ToArray();
+            var methods = t.GetMethods(flags).Where(m => m.Name == name);
+            if (t.IsEnum)
+                methods = methods.Concat(GetEnumOperators(t, name));
+            return methods.ToArray();
         }
 
         public static MethodInfo[] GetExtensionMethods(this Type type, string name, IEnumerable<Assembly> assemblies = null)
@@ -132,6 +156,36 @@ namespace NLua.Extensions
             if (mi.Length == 0)
                 return null;
             return mi[0];
+        }
+
+        static readonly Dictionary<Type, Dictionary<string, MethodInfo>> operators
+            = new Dictionary<Type, Dictionary<string, MethodInfo>>();
+
+        static MethodInfo GetOperator(Type t, string op)
+            => typeof(EnumOperators).GetMethod(op, BindingFlags.Public | BindingFlags.Static).MakeGenericMethod(t);
+
+        static MethodInfo[] GetEnumOperators(this Type t, string operation)
+        {
+            Dictionary<string, MethodInfo> ops;
+            if (!operators.TryGetValue(t, out ops))
+            {
+                operators[t] = ops = new Dictionary<string, MethodInfo>();
+                ops["op_Addition"] = GetOperator(t, nameof(EnumOperators.Add));
+                ops["op_Subtraction"] = GetOperator(t, nameof(EnumOperators.Subtract));
+                ops["op_UnaryNegation"] = GetOperator(t, nameof(EnumOperators.Negate));
+                ops["op_Equality"] = GetOperator(t, nameof(EnumOperators.Equal));
+                ops["op_LessThan"] = GetOperator(t, nameof(EnumOperators.LessThan));
+                ops["op_LessThanOrEqual"] = GetOperator(t, nameof(EnumOperators.LessEqual));
+                ops["op_BitwiseAnd"] = GetOperator(t, nameof(EnumOperators.BitAnd));
+                ops["op_BitwiseOr"] = GetOperator(t, nameof(EnumOperators.BitOr));
+                ops["op_ExclusiveOr"] = GetOperator(t, nameof(EnumOperators.BitXOr));
+            }
+
+            MethodInfo op;
+            if (ops.TryGetValue(operation, out op))
+                return new[] { op };
+            else
+                return new MethodInfo[0];
         }
     }
 }

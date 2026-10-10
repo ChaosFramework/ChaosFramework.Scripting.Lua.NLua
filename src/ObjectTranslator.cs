@@ -75,7 +75,7 @@ namespace NLua
             _tagPtr = Marshal.AllocHGlobal(Marshal.SizeOf(typeof(int)));
             this.interpreter = new WeakReference<Lua>(interpreter);
             typeChecker = new CheckType(this);
-            metaFunctions = new MetaFunctions(this);
+            metaFunctions = new MetaFunctions(interpreter, this);
             assemblies = new List<Assembly>();
 
             CreateLuaObjectList(luaState);
@@ -756,6 +756,24 @@ namespace NLua
 
         void RegisterOperatorsFunctions(LuaState luaState, Type type)
         {
+            if (type.HasBitwiseAndOperator())
+            {
+                luaState.PushString("__band");
+                luaState.PushCFunction(MetaFunctions.BitwiseAndFunction);
+                luaState.RawSet(-3);
+            }
+            if (type.HasBitwiseOrOperator())
+            {
+                luaState.PushString("__bor");
+                luaState.PushCFunction(MetaFunctions.BitwiseOrFunction);
+                luaState.RawSet(-3);
+            }
+            if (type.HasBitwiseXOrOperator())
+            {
+                luaState.PushString("__bxor");
+                luaState.PushCFunction(MetaFunctions.BitwiseXOrFunction);
+                luaState.RawSet(-3);
+            }
             if (type.HasAdditionOperator())
             {
                 luaState.PushString("__add");

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Project Metadata -->
+  <PropertyGroup>
+    <ProjectGuid>{D5B6902E-37CD-44DB-8AC5-BFAEEE663633}</ProjectGuid>
+    <RootNamespace>NLua</RootNamespace>
+    <AssemblyName>ChaosFramework.Scripting.Lua.NLua</AssemblyName>
+  </PropertyGroup>
+
+  <!-- Properties -->
+  <Import Project="$(SolutionDir)submodules/ChaosPresets.Targets/Properties/Common.targets" />
+  <Import Project="$(SolutionDir)submodules/ChaosPresets.Targets/Properties/OutputType/Library.targets" />
+
+  <!-- Configurations -->
+  <Import Project="$(SolutionDir)submodules/ChaosPresets.Targets/Configurations.targets" />
+
+  <!-- Included Files -->
+  <ItemGroup>
+    <Compile Include="src/**/*.cs" />
+    <Compile Remove="src/Properties/AssemblyInfo.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="KeraLua" Version="1.4.9" />
+  </ItemGroup>
+
+</Project>
