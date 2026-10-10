@@ -43,6 +43,9 @@ namespace NLua
         public static readonly LuaNativeFunction EqualFunction = EqualLua;
         public static readonly LuaNativeFunction LessThanFunction  = LessThanLua;
         public static readonly LuaNativeFunction LessThanOrEqualFunction = LessThanOrEqualLua;
+        public static readonly LuaNativeFunction BitwiseAndFunction = BitwiseAndLua;
+        public static readonly LuaNativeFunction BitwiseOrFunction = BitwiseOrLua;
+        public static readonly LuaNativeFunction BitwiseXOrFunction = BitwiseXOrLua;
 
         readonly Dictionary<object, Dictionary<object, object>> _memberCache = new Dictionary<object, Dictionary<object, object>>();
         readonly ObjectTranslator _translator;
@@ -161,6 +164,35 @@ namespace NLua
             return 1;
         }
 
+         /*
+          * __band metafunction of CLR objects.
+          */
+ #if __IOS__ || __TVOS__ || __WATCHOS__ || __MACCATALYST__
+ #pragma warning disable CA1416 // Validate platform compatibility
+         [MonoPInvokeCallback(typeof(LuaNativeFunction))]
+ #pragma warning restore CA1416 // Validate platform compatibility
+ #endif
+        static int BitwiseAndLua(IntPtr luaState) => BinaryOperator(luaState, "op_BitwiseAnd");
+
+         /*
+          * __bor metafunction of CLR objects.
+          */
+ #if __IOS__ || __TVOS__ || __WATCHOS__ || __MACCATALYST__
+ #pragma warning disable CA1416 // Validate platform compatibility
+         [MonoPInvokeCallback(typeof(LuaNativeFunction))]
+ #pragma warning restore CA1416 // Validate platform compatibility
+ #endif
+        static int BitwiseOrLua(IntPtr luaState) => BinaryOperator(luaState, "op_BitwiseOr");
+
+         /*
+          * __bxor metafunction of CLR objects.
+          */
+ #if __IOS__ || __TVOS__ || __WATCHOS__ || __MACCATALYST__
+ #pragma warning disable CA1416 // Validate platform compatibility
+         [MonoPInvokeCallback(typeof(LuaNativeFunction))]
+ #pragma warning restore CA1416 // Validate platform compatibility
+ #endif
+        static int BitwiseXOrLua(IntPtr luaState) => BinaryOperator(luaState, "op_ExclusiveOr");
 
         /*
          * __add metafunction of CLR objects.
@@ -170,17 +202,7 @@ namespace NLua
         [MonoPInvokeCallback(typeof(LuaNativeFunction))]
 #pragma warning restore CA1416 // Validate platform compatibility
 #endif
-        static int AddLua(IntPtr luaState)
-        {
-            var state = LuaState.FromIntPtr(luaState);
-            var translator = ObjectTranslatorPool.Instance.Find(state);
-            int result = MatchOperator(state, "op_Addition", translator);
-            var exception = translator.GetObject(state, -1) as LuaScriptException;
-
-            if (exception != null)
-                return state.Error();
-            return result;
-        }
+        static int AddLua(IntPtr luaState) => BinaryOperator(luaState, "op_Addition");
 
         /*
         * __sub metafunction of CLR objects.
@@ -190,17 +212,7 @@ namespace NLua
         [MonoPInvokeCallback(typeof(LuaNativeFunction))]
 #pragma warning restore CA1416 // Validate platform compatibility
 #endif
-        static int SubtractLua(IntPtr luaState)
-        {
-            var state = LuaState.FromIntPtr(luaState);
-            var translator = ObjectTranslatorPool.Instance.Find(state);
-            int result = MatchOperator(state, "op_Subtraction", translator);
-            var exception = translator.GetObject(state, -1) as LuaScriptException;
-
-            if (exception != null)
-                return state.Error();
-            return result;
-        }
+        static int SubtractLua(IntPtr luaState) => BinaryOperator(luaState, "op_Subtraction");
 
         /*
         * __mul metafunction of CLR objects.
@@ -210,17 +222,7 @@ namespace NLua
         [MonoPInvokeCallback(typeof(LuaNativeFunction))]
 #pragma warning restore CA1416 // Validate platform compatibility
 #endif
-        static int MultiplyLua(IntPtr luaState)
-        {
-            var state = LuaState.FromIntPtr(luaState);
-            var translator = ObjectTranslatorPool.Instance.Find(state);
-            int result = MatchOperator(state, "op_Multiply", translator);
-            var exception = translator.GetObject(state, -1) as LuaScriptException;
-
-            if (exception != null)
-                return state.Error();
-            return result;
-        }
+        static int MultiplyLua(IntPtr luaState) => BinaryOperator(luaState, "op_Multiply");
 
         /*
         * __div metafunction of CLR objects.
@@ -230,17 +232,7 @@ namespace NLua
         [MonoPInvokeCallback(typeof(LuaNativeFunction))]
 #pragma warning restore CA1416 // Validate platform compatibility
 #endif
-        static int DivideLua(IntPtr luaState)
-        {
-            var state = LuaState.FromIntPtr(luaState);
-            var translator = ObjectTranslatorPool.Instance.Find(state);
-            int result = MatchOperator(state, "op_Division", translator);
-            var exception = translator.GetObject(state, -1) as LuaScriptException;
-
-            if (exception != null)
-                return state.Error();
-            return result;
-        }
+        static int DivideLua(IntPtr luaState) => BinaryOperator(luaState, "op_Division");
 
         /*
         * __mod metafunction of CLR objects.
@@ -250,17 +242,7 @@ namespace NLua
         [MonoPInvokeCallback(typeof(LuaNativeFunction))]
 #pragma warning restore CA1416 // Validate platform compatibility
 #endif
-        static int ModLua(IntPtr luaState)
-        {
-            var state = LuaState.FromIntPtr(luaState);
-            var translator = ObjectTranslatorPool.Instance.Find(state);
-            int result = MatchOperator(state, "op_Modulus", translator);
-            var exception = translator.GetObject(state, -1) as LuaScriptException;
-
-            if (exception != null)
-                return state.Error();
-            return result;
-        }
+        static int ModLua(IntPtr luaState) => BinaryOperator(luaState, "op_Modulus");
 
         /*
         * __unm metafunction of CLR objects.
@@ -314,17 +296,7 @@ namespace NLua
         [MonoPInvokeCallback(typeof(LuaNativeFunction))]
 #pragma warning restore CA1416 // Validate platform compatibility
 #endif
-        static int EqualLua(IntPtr luaState)
-        {
-            var state = LuaState.FromIntPtr(luaState);
-            var translator = ObjectTranslatorPool.Instance.Find(state);
-            int result = MatchOperator(state, "op_Equality", translator);
-            var exception = translator.GetObject(state, -1) as LuaScriptException;
-
-            if (exception != null)
-                return state.Error();
-            return result;
-        }
+        static int EqualLua(IntPtr luaState) => BinaryOperator(luaState, "op_Equality");
 
         /*
         * __lt metafunction of CLR objects.
@@ -334,17 +306,7 @@ namespace NLua
         [MonoPInvokeCallback(typeof(LuaNativeFunction))]
 #pragma warning restore CA1416 // Validate platform compatibility
 #endif
-        static int LessThanLua(IntPtr luaState)
-        {
-            var state = LuaState.FromIntPtr(luaState);
-            var translator = ObjectTranslatorPool.Instance.Find(state);
-            int result = MatchOperator(state, "op_LessThan", translator);
-            var exception = translator.GetObject(state, -1) as LuaScriptException;
-
-            if (exception != null)
-                return state.Error();
-            return result;
-        }
+        static int LessThanLua(IntPtr luaState) => BinaryOperator(luaState, "op_LessThan");
 
         /*
          * __le metafunction of CLR objects.
@@ -354,17 +316,7 @@ namespace NLua
         [MonoPInvokeCallback(typeof(LuaNativeFunction))]
 #pragma warning restore CA1416 // Validate platform compatibility
 #endif
-        static int LessThanOrEqualLua(IntPtr luaState)
-        {
-            var state = LuaState.FromIntPtr(luaState);
-            var translator = ObjectTranslatorPool.Instance.Find(state);
-            int result = MatchOperator(state, "op_LessThanOrEqual", translator);
-            var exception = translator.GetObject(state, -1) as LuaScriptException;
-
-            if (exception != null)
-                return state.Error();
-            return result;
-        }
+        static int LessThanOrEqualLua(IntPtr luaState) => BinaryOperator(luaState, "op_LessThanOrEqual");
 
         /// <summary>
         /// Debug tool to dump the lua stack
@@ -1664,6 +1616,18 @@ namespace NLua
                     return true;
             }
             return isParamArray;
+        }
+
+        static int BinaryOperator(IntPtr luaState, string op)
+        {
+            var state = LuaState.FromIntPtr(luaState);
+            var translator = ObjectTranslatorPool.Instance.Find(state);
+            int result = MatchOperator(state, op, translator);
+            var exception = translator.GetObject(state, -1) as LuaScriptException;
+
+            if (exception != null)
+                return state.Error();
+            return result;
         }
     }
 }
