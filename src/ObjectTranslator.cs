@@ -75,7 +75,7 @@ namespace NLua
             _tagPtr = Marshal.AllocHGlobal(Marshal.SizeOf(typeof(int)));
             this.interpreter = new WeakReference<Lua>(interpreter);
             typeChecker = new CheckType(this);
-            metaFunctions = new MetaFunctions(this);
+            metaFunctions = new MetaFunctions(interpreter, this);
             assemblies = new List<Assembly>();
 
             CreateLuaObjectList(luaState);

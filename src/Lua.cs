@@ -17,11 +17,16 @@ using NLua.Extensions;
 using LuaState = KeraLua.Lua;
 using LuaNativeFunction = KeraLua.LuaFunction;
 
+using ValidateMember = System.Func<System.Reflection.MemberInfo, bool>;
+using ValidateType = System.Func<System.Type, bool>;
 
 namespace NLua
 {
     public class Lua : IDisposable
     {
+        static bool AllowAll(Type _) => true;
+        static bool AllowAll(MemberInfo _) => true;
+
         #region lua debug functions
         /// <summary>
         /// Event that is raised when an exception occures during a hook call.
@@ -53,6 +58,9 @@ namespace NLua
         private ObjectTranslator _translator;
 
         internal ObjectTranslator Translator => _translator;
+
+        public ValidateType validateReturnType = AllowAll;
+        public ValidateMember validateMember = AllowAll;
 
         /// <summary>
         /// Used to ensure multiple .net threads all get serialized by this single lock for access to the lua stack/objects

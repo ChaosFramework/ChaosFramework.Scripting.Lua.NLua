@@ -77,8 +77,10 @@ namespace NLua
               
             //  return index";
 
-        public MetaFunctions(ObjectTranslator translator)
+        readonly Lua lua;
+        public MetaFunctions(Lua lua, ObjectTranslator translator)
         {
+            this.lua = lua;
             _translator = translator;
         }
 
@@ -849,7 +851,7 @@ namespace NLua
                 }
             }
 
-            if (member != null)
+            if (member != null && MemberValidation.MemberValid(lua, member))
             {
                 if (member.MemberType == MemberTypes.Field)
                 {
